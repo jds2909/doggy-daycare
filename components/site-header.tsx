@@ -3,7 +3,7 @@ import { PawMark } from "./paw-mark";
 
 const navigation = [
   { label: "Home", href: "/" },
-  { label: "Booking Enquiry", href: "/#booking" },
+  { label: "Booking Enquiry", href: "/booking-enquiry" },
   { label: "Vaccination Policy", href: "/vaccination-policy" },
   { label: "Preparing for Stay", href: "/preparing-for-stay" },
   { label: "Trial Familiarisation", href: "/trial-familiarisation" },
@@ -42,6 +42,23 @@ function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
 export function SiteHeader() {
   return (
     <header className="relative z-20 border-b border-blue-100 bg-white/95">
+      <div className="bg-blue-900 text-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-center gap-5 px-5 py-2 text-sm sm:justify-end sm:px-8 lg:px-10">
+          <a
+            href="tel:+447856363408"
+            className="font-bold underline decoration-blue-400 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            aria-label="Call Kerry on 07856 363408"
+          >
+            Call Kerry: 07856 363408
+          </a>
+          <a
+            href="mailto:kerrysnudge@gmail.com"
+            className="hidden font-semibold text-blue-100 underline decoration-blue-500 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:inline"
+          >
+            kerrysnudge@gmail.com
+          </a>
+        </div>
+      </div>
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-5 py-4 sm:px-8 lg:px-10">
         <Link
           href="/"
@@ -62,7 +79,7 @@ export function SiteHeader() {
         </nav>
 
         <Link
-          href="/#booking"
+          href="/booking-enquiry"
           className="hidden shrink-0 bg-blue-800 px-5 py-3 text-sm font-bold text-white hover:bg-blue-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800 sm:inline-flex"
         >
           Book a stay
@@ -81,7 +98,7 @@ export function SiteHeader() {
           >
             <NavigationLinks mobile />
             <Link
-              href="/#booking"
+              href="/booking-enquiry"
               className="mt-2 flex justify-center bg-blue-800 px-4 py-3 text-sm font-bold text-white"
             >
               Book a stay

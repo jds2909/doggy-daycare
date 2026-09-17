@@ -21,9 +21,15 @@ export function SiteFooter() {
             Visit us
           </h2>
           <address className="text-sm not-italic leading-6 text-blue-200">
+            6 Druckham Terrace
+            <br />
+            Race Hill
+            <br />
             Launceston
             <br />
             Cornwall
+            <br />
+            PL15 9BS
           </address>
         </div>
 
@@ -34,7 +40,7 @@ export function SiteFooter() {
           <p className="text-sm leading-6 text-blue-200">Fully insured</p>
           <p className="text-sm leading-6 text-blue-200">Licence no. L126-003155</p>
           <Link
-            href="/#booking"
+            href="/booking-enquiry"
             className="mt-3 inline-block text-sm font-bold text-white underline decoration-blue-400 underline-offset-4"
           >
             Make a booking enquiry

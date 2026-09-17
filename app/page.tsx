@@ -35,12 +35,17 @@ export default function Home() {
                 </p>
                 <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
                   <Link
-                    href="#booking"
+                    href="/booking-enquiry"
                     className="inline-flex justify-center bg-blue-800 px-6 py-3.5 font-bold text-white hover:bg-blue-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
                   >
                     Make a booking enquiry
                   </Link>
-                  <p className="text-sm text-slate-600">Fully insured and licensed</p>
+                  <a
+                    href="tel:+447856363408"
+                    className="font-bold text-blue-800 underline decoration-blue-300 underline-offset-4 hover:text-blue-950 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-800"
+                  >
+                    Call 07856 363408
+                  </a>
                 </div>
               </div>
             </div>
@@ -217,6 +222,64 @@ export default function Home() {
         </section>
 
         <section
+          className="border-t border-slate-200 bg-[#fbfaf7] px-5 py-20 sm:px-10 lg:py-24"
+          aria-labelledby="contact-heading"
+        >
+          <div className="mx-auto grid max-w-6xl gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+            <div>
+              <SectionLabel>Contact us</SectionLabel>
+              <h2
+                id="contact-heading"
+                className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl"
+              >
+                Get in touch
+              </h2>
+              <p className="mt-5 max-w-md leading-7 text-slate-700">
+                Call or email to tell us about your dog and discuss the dates you have
+                in mind.
+              </p>
+              <a
+                href="tel:+447856363408"
+                className="mt-8 block text-4xl font-bold tracking-tight text-slate-900 hover:text-blue-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-800 sm:text-5xl"
+              >
+                07856 363408
+              </a>
+              <a
+                href="mailto:kerrysnudge@gmail.com"
+                className="mt-5 inline-block break-all text-xl font-bold text-blue-800 underline decoration-blue-300 underline-offset-4 hover:text-blue-950 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-800 sm:text-2xl"
+              >
+                kerrysnudge@gmail.com
+              </a>
+            </div>
+
+            <div>
+              <h3 className="text-2xl font-bold text-slate-900">Visit us</h3>
+              <address className="mt-4 text-lg not-italic leading-8 text-slate-700">
+                6 Druckham Terrace
+                <br />
+                Race Hill
+                <br />
+                Launceston
+                <br />
+                Cornwall
+                <br />
+                PL15 9BS
+              </address>
+
+              <div className="mt-9 border-t border-slate-300 pt-8">
+                <h3 className="text-xl font-bold text-slate-900">Directions</h3>
+                <p className="mt-4 max-w-2xl leading-7 text-slate-700">
+                  Exit the A30 towards Launceston town centre.
+                  Continue past Tesco and straight over the mini roundabout, then head up Race Hill.
+                  At the top, pass Race Hill Garage on the right.
+                  Doggy Day Care at 6 Druckham Terrace is the first cream end-of-terrace cottage after the garage entrance and one private driveway, on the right-hand side.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
           id="booking"
           className="scroll-mt-20 bg-[#f6f2e9] px-5 py-20 sm:px-10 lg:py-24"
           aria-labelledby="booking-heading"
@@ -235,16 +298,13 @@ export default function Home() {
                 discuss whether we are the right fit.
               </p>
             </div>
-            <a
-              href="mailto:hello@example.com?subject=Doggy%20day%20care%20booking%20enquiry"
+            <Link
+              href="/booking-enquiry"
               className="inline-flex shrink-0 justify-center bg-blue-800 px-7 py-4 font-bold text-white hover:bg-blue-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
             >
               Make a booking enquiry
-            </a>
+            </Link>
           </div>
-          <p className="mx-auto mt-5 max-w-5xl text-xs text-slate-500">
-            Placeholder email link—replace when the client’s contact details are ready.
-          </p>
         </section>
       </main>
       <SiteFooter />
