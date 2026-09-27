@@ -10,7 +10,7 @@ An early-stage website for a small, independent dog daycare and home boarding bu
 
 ### Homepage
 
-[![Homepage showing the photography-led hero and booking call to action](docs/screenshots/homepage.png)](https://doggy-daycare-woad.vercel.app/)
+[![Homepage showing the photography-led hero and booking call to action](docs/screenshots/homepage.png)]([https://www.launcestondogboarding.com/])
 
 ### Booking enquiry
 
