@@ -2,7 +2,7 @@
 
 An early-stage website for a small, independent dog daycare and home boarding business in Launceston, Cornwall. The project focuses on presenting the business as a warm, personal alternative to commercial kennels while making essential information and booking enquiries easy to access.
 
-**[View the live preview](https://doggy-daycare-woad.vercel.app/)**
+**[View the live preview](https://www.launcestondogboarding.com/)**
 
 > **Project status:** Active development. The public-facing design and static booking-enquiry experience are in place; backend form submission and the remaining information pages are still to be built.
 
@@ -10,11 +10,11 @@ An early-stage website for a small, independent dog daycare and home boarding bu
 
 ### Homepage
 
-[![Homepage showing the photography-led hero and booking call to action](docs/screenshots/homepage.png)](https://doggy-daycare-woad.vercel.app/)
+[![Homepage showing the photography-led hero and booking call to action](docs/screenshots/homepage.png)]([https://www.launcestondogboarding.com/])
 
 ### Booking enquiry
 
-[![Booking enquiry page showing the introduction and first form section](docs/screenshots/booking-enquiry.png)](https://doggy-daycare-woad.vercel.app/booking-enquiry)
+[![Booking enquiry page showing the introduction and first form section](docs/screenshots/booking-enquiry.png)](https://www.launcestondogboarding.com/booking-enquiry)
 
 ## Current features
 
