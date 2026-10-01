@@ -1,5 +1,5 @@
+import Image from "next/image";
 import Link from "next/link";
-import { PawMark } from "./paw-mark";
 
 export function SiteFooter() {
   return (
@@ -7,7 +7,13 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 md:grid-cols-[1.5fr_1fr_1fr] lg:px-10">
         <div>
           <div className="mb-4 flex items-center gap-3 text-white">
-            <PawMark className="size-9" />
+            <Image
+              src="/photos/kezza-logo.png"
+              alt=""
+              width={44}
+              height={44}
+              className="size-11 object-contain brightness-0 invert"
+            />
             <p className="font-bold">Doggy Day Care &amp; Home from Home Boarding</p>
           </div>
           <p className="max-w-md text-sm leading-6 text-blue-200">

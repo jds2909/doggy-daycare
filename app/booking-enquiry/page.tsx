@@ -27,6 +27,16 @@ export default function BookingEnquiryPage() {
               understand your dog’s needs before discussing availability and a trial
               familiarisation.
             </p>
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-700">
+              If you prefer, please don&apos;t hesitate to call Kerry on{" "}
+              <a
+                href="tel:+447856363408"
+                className="font-bold text-blue-800 underline decoration-blue-300 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-800"
+              >
+                07856 363408
+              </a>
+              .
+            </p>
             <p className="mt-5 border-l-4 border-blue-800 pl-4 font-bold text-slate-900">
               This is a booking enquiry only. Your booking is not confirmed until we
               contact you and agree the arrangements.

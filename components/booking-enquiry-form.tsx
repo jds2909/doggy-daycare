@@ -13,6 +13,7 @@ type DogEntry = {
   allergies: YesNo;
   aggressionOrFear: YesNo;
   insured: YesNo;
+  crateRequired: YesNo;
 };
 
 type ConditionalDogField = Exclude<keyof DogEntry, "id" | "name">;
@@ -56,7 +57,7 @@ const consentQuestions = [
   },
   {
     key: "crate-consent",
-    label: "Do you consent to crate use if it is appropriate for this dog’s care?",
+    label: "Do you require us to use a crate?",
   },
   {
     key: "medication-consent",
@@ -178,6 +179,7 @@ export function BookingEnquiryForm() {
       allergies: "",
       aggressionOrFear: "",
       insured: "",
+      crateRequired: "",
     },
   ]);
   const [nextDogId, setNextDogId] = useState(2);
@@ -209,6 +211,7 @@ export function BookingEnquiryForm() {
         allergies: "",
         aggressionOrFear: "",
         insured: "",
+        crateRequired: "",
       },
     ]);
     setNextDogId((currentId) => currentId + 1);
@@ -817,14 +820,40 @@ export function BookingEnquiryForm() {
                 <DogHeading dog={dog} index={index} />
               </legend>
               <div className="grid gap-8">
-                {consentQuestions.map((question) => (
-                  <YesNoQuestion
-                    key={question.key}
-                    name={`dog-${dog.id}-${question.key}`}
-                    legend={question.label}
-                    required
-                  />
-                ))}
+                {consentQuestions.map((question) => {
+                  const isCrateQuestion = question.key === "crate-consent";
+
+                  return (
+                    <div key={question.key}>
+                      <YesNoQuestion
+                        name={`dog-${dog.id}-${question.key}`}
+                        legend={question.label}
+                        required
+                        value={isCrateQuestion ? dog.crateRequired : undefined}
+                        onChange={
+                          isCrateQuestion
+                            ? (value) =>
+                                updateDogCondition(dog.id, "crateRequired", value)
+                            : undefined
+                        }
+                      />
+                      {isCrateQuestion && dog.crateRequired === "yes" && (
+                        <label className="mt-4 flex items-start gap-3 border-l-4 border-blue-800 bg-blue-50 px-4 py-3">
+                          <input
+                            name={`dog-${dog.id}-crate-agreement`}
+                            type="checkbox"
+                            required
+                            className="mt-1 size-4 shrink-0 accent-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
+                          />
+                          <span className="font-bold text-slate-900">
+                            You will need to provide your own crate. Do you agree?
+                            <RequiredMark />
+                          </span>
+                        </label>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </fieldset>
           ))}

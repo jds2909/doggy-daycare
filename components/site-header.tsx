@@ -1,5 +1,5 @@
+import Image from "next/image";
 import Link from "next/link";
-import { PawMark } from "./paw-mark";
 
 const navigation = [
   { label: "Home", href: "/" },
@@ -65,8 +65,14 @@ export function SiteHeader() {
           className="flex shrink-0 items-center gap-3 text-blue-950"
           aria-label="Doggy Day Care home"
         >
-          <span className="grid size-10 place-items-center text-blue-800">
-            <PawMark className="size-8" />
+          <span className="grid size-12 place-items-center">
+            <Image
+              src="/photos/kezza-logo.png"
+              alt=""
+              width={48}
+              height={48}
+              className="size-12 object-contain"
+            />
           </span>
           <span className="max-w-48 text-sm font-bold leading-tight tracking-tight sm:text-base">
             Doggy Day Care
