@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, ReactNode, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { serializeBookingEnquiry } from "@/lib/serialize-booking-enquiry";
 
 type YesNo = "" | "yes" | "no";
 
@@ -25,6 +27,13 @@ type ReviewDetails = {
   service: string;
   dates: string;
   dogs: string[];
+};
+
+type SubmissionState = "idle" | "submitting" | "success" | "error";
+
+type SubmissionAttempt = {
+  submissionKey: string;
+  payloadJson: string;
 };
 
 const inputStyles =
@@ -123,6 +132,7 @@ function YesNoQuestion({
   helperText?: string;
 }) {
   const helperId = helperText ? `${name}-help` : undefined;
+  const isControlled = value !== undefined;
 
   return (
     <fieldset aria-describedby={helperId}>
@@ -146,7 +156,7 @@ function YesNoQuestion({
                 type="radio"
                 value={option}
                 required={required}
-                checked={value ? value === option : undefined}
+                checked={isControlled ? value === option : undefined}
                 onChange={() => onChange?.(option)}
                 className="size-4 accent-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
               />
@@ -186,20 +196,24 @@ export function BookingEnquiryForm() {
   const [service, setService] = useState<"" | "day-care" | "boarding">("");
   const [review, setReview] = useState<ReviewDetails | null>(null);
   const [validationMessage, setValidationMessage] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
+  const [submissionMessage, setSubmissionMessage] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
   const reviewRef = useRef<HTMLHeadingElement>(null);
   const successRef = useRef<HTMLDivElement>(null);
+  const submissionAttemptRef = useRef<SubmissionAttempt | null>(null);
 
   useEffect(() => {
     if (review) reviewRef.current?.focus();
   }, [review]);
 
   useEffect(() => {
-    if (submitted) successRef.current?.focus();
-  }, [submitted]);
+    if (submissionState === "success") successRef.current?.focus();
+  }, [submissionState]);
 
   function addDog() {
+    if (dogs.length >= 5) return;
+
     setDogs((currentDogs) => [
       ...currentDogs,
       {
@@ -216,13 +230,15 @@ export function BookingEnquiryForm() {
     ]);
     setNextDogId((currentId) => currentId + 1);
     setReview(null);
-    setSubmitted(false);
+    setSubmissionState("idle");
+    setSubmissionMessage("");
   }
 
   function removeDog(id: number) {
     setDogs((currentDogs) => currentDogs.filter((dog) => dog.id !== id));
     setReview(null);
-    setSubmitted(false);
+    setSubmissionState("idle");
+    setSubmissionMessage("");
   }
 
   function updateDogName(id: number, name: string) {
@@ -239,6 +255,300 @@ export function BookingEnquiryForm() {
     setDogs((currentDogs) =>
       currentDogs.map((dog) => (dog.id === id ? { ...dog, [field]: value } : dog)),
     );
+  }
+
+  // Development convenience only. NODE_ENV is replaced at build time, so the
+  // button and this handler are unreachable in a production build.
+  function fillTestData() {
+    if (process.env.NODE_ENV !== "development") return;
+
+    const form = formRef.current;
+    if (!form) return;
+
+    form.reset();
+
+    flushSync(() => {
+      setDogs([
+        {
+          id: 1,
+          name: "Fictional Fido",
+          microchipped: "yes",
+          medicalConditions: "yes",
+          medication: "yes",
+          allergies: "yes",
+          aggressionOrFear: "yes",
+          insured: "yes",
+          crateRequired: "yes",
+        },
+      ]);
+      setNextDogId(2);
+      setService("day-care");
+      setReview(null);
+      setValidationMessage("");
+      setSubmissionState("idle");
+      setSubmissionMessage("");
+    });
+
+    submissionAttemptRef.current = null;
+
+    const setValue = (name: string, value: string) => {
+      const field = form.elements.namedItem(name);
+
+      if (
+        field instanceof HTMLInputElement ||
+        field instanceof HTMLTextAreaElement ||
+        field instanceof HTMLSelectElement
+      ) {
+        field.value = value;
+      } else if (field instanceof RadioNodeList) {
+        field.value = value;
+      }
+    };
+
+    const setChecked = (name: string) => {
+      const field = form.elements.namedItem(name);
+      if (field instanceof HTMLInputElement) field.checked = true;
+    };
+
+    setValue("fullName", "Taylor Example");
+    setValue("telephone", "07111 222333");
+    setValue("email", "taylor.example@example.com");
+    setValue("homeAddress", "14 Fictional Lane, Exampleton, Cornwall");
+    setValue("postcode", "PL15 3AB");
+    setValue("service", "day-care");
+    setValue("dayCareDates", "Mondays during November 2026");
+    setValue("arrivalTime", "09:00");
+    setValue("collectionTime", "17:00");
+    setValue("sameHouseholdDogs", "no");
+    setValue("bookingNotes", "Completely fictional local form test.");
+
+    setValue("dog-1-name", "Fictional Fido");
+    setValue("dog-1-breed", "Imaginary Spaniel cross");
+    setValue("dog-1-age", "Approximately 4 years");
+    setValue("dog-1-sex", "female");
+    setValue("dog-1-neutered", "yes");
+    setValue("dog-1-microchipped", "yes");
+    setValue("dog-1-microchip-number", "FICTIONAL-MICROCHIP-001");
+    setValue("dog-1-insured", "yes");
+    setValue("dog-1-insurance-company", "Example Pet Insurance");
+    setValue("dog-1-policy-number", "FICTIONAL-POLICY-001");
+
+    setValue(
+      "dog-1-vet-details",
+      "Example Veterinary Practice, 1 Sample Road, 01000 111111",
+    );
+    setValue("dog-1-vaccination-date", "2026-08-01");
+    setValue("dog-1-worming-date", "2026-09-01");
+    setValue("dog-1-flea-date", "2026-09-01");
+    setValue("dog-1-medical-conditions", "yes");
+    setValue("dog-1-medical-details", "Fictional mild joint stiffness.");
+    setValue("dog-1-medication", "yes");
+    setValue(
+      "dog-1-medication-details",
+      "One fictional tablet with the evening meal.",
+    );
+    setValue("dog-1-allergies", "yes");
+    setValue("dog-1-allergy-details", "Fictional seasonal pollen sensitivity.");
+
+    setValue(
+      "dog-1-daily-routine",
+      "Breakfast, a morning walk, an afternoon rest and an evening walk.",
+    );
+    setValue("dog-1-feeding-routine", "Two fictional measured meals each day.");
+    setValue("dog-1-exercise-requirements", "Two moderate walks.");
+    setValue("dog-1-sleeping-arrangements", "Sleeps downstairs on a dog bed.");
+    setValue("dog-1-other-dogs", "Friendly after a calm introduction.");
+    setValue("dog-1-separation-anxiety", "May whine briefly when first left.");
+    setValue("dog-1-aggression-fear", "yes");
+    setValue(
+      "dog-1-aggression-fear-details",
+      "Fictionally nervous around noisy traffic; create distance and offer treats.",
+    );
+    setValue("dog-1-other-care", "Enjoys fictional puzzle feeders.");
+
+    setValue("dog-1-feeding-consent", "yes");
+    setValue("dog-1-on-lead-consent", "yes");
+    setValue("dog-1-off-lead-consent", "no");
+    setValue("dog-1-other-household-walk-consent", "yes");
+    setValue("dog-1-socialising-consent", "yes");
+    setValue("dog-1-overnight-consent", "no");
+    setValue("dog-1-crate-consent", "yes");
+    setChecked("dog-1-crate-agreement");
+    setValue("dog-1-medication-consent", "yes");
+    setValue("dog-1-emergency-treatment-consent", "yes");
+    setChecked("accuracyConfirmation");
+    setChecked("enquiryAcknowledgement");
+  }
+
+  // Development-only two-dog fixture for testing boarding relationships and
+  // conditional-field nulling through the real serializer and API.
+  function fillTwoDogBoardingTestData() {
+    if (process.env.NODE_ENV !== "development") return;
+
+    const form = formRef.current;
+    if (!form) return;
+
+    form.reset();
+
+    flushSync(() => {
+      setDogs([
+        {
+          id: 1,
+          name: "Fictional Cedar",
+          microchipped: "yes",
+          medicalConditions: "no",
+          medication: "no",
+          allergies: "no",
+          aggressionOrFear: "no",
+          insured: "yes",
+          crateRequired: "no",
+        },
+        {
+          id: 2,
+          name: "Fictional Pippin",
+          microchipped: "no",
+          medicalConditions: "yes",
+          medication: "yes",
+          allergies: "yes",
+          aggressionOrFear: "yes",
+          insured: "no",
+          crateRequired: "yes",
+        },
+      ]);
+      setNextDogId(3);
+      setService("boarding");
+      setReview(null);
+      setValidationMessage("");
+      setSubmissionState("idle");
+      setSubmissionMessage("");
+    });
+
+    submissionAttemptRef.current = null;
+
+    const setValue = (name: string, value: string) => {
+      const field = form.elements.namedItem(name);
+
+      if (
+        field instanceof HTMLInputElement ||
+        field instanceof HTMLTextAreaElement ||
+        field instanceof HTMLSelectElement
+      ) {
+        field.value = value;
+      } else if (field instanceof RadioNodeList) {
+        field.value = value;
+      }
+    };
+
+    const setChecked = (name: string) => {
+      const field = form.elements.namedItem(name);
+      if (field instanceof HTMLInputElement) field.checked = true;
+    };
+
+    setValue("fullName", "Morgan Boarding-Test Example");
+    setValue("telephone", "07222 333444");
+    setValue("email", "two.dog.boarding@example.com");
+    setValue("homeAddress", "20 Demonstration Close, Exampleford, Cornwall");
+    setValue("postcode", "PL15 4CD");
+    setValue("service", "boarding");
+    setValue("arrivalDate", "2027-02-12");
+    setValue("departureDate", "2027-02-15");
+    setValue("arrivalTime", "10:00");
+    setValue("collectionTime", "16:00");
+    setValue("sameHouseholdDogs", "yes");
+    setValue("bookingNotes", "DEV TWO-DOG BOARDING TEST - entirely fictional.");
+
+    setValue("dog-1-name", "Fictional Cedar");
+    setValue("dog-1-breed", "Imaginary Labrador cross");
+    setValue("dog-1-age", "5 fictional years");
+    setValue("dog-1-sex", "male");
+    setValue("dog-1-neutered", "yes");
+    setValue("dog-1-microchipped", "yes");
+    setValue("dog-1-microchip-number", "FICTIONAL-CHIP-CEDAR");
+    setValue("dog-1-insured", "yes");
+    setValue("dog-1-insurance-company", "Example Pet Cover");
+    setValue("dog-1-policy-number", "FICTIONAL-POLICY-CEDAR");
+    setValue(
+      "dog-1-vet-details",
+      "Sample Animal Clinic, 2 Imaginary Street, 01000 222222",
+    );
+    setValue("dog-1-vaccination-date", "2026-08-10");
+    setValue("dog-1-worming-date", "2026-09-10");
+    setValue("dog-1-flea-date", "2026-09-10");
+    setValue("dog-1-medical-conditions", "no");
+    setValue("dog-1-medication", "no");
+    setValue("dog-1-allergies", "no");
+    setValue("dog-1-daily-routine", "Early breakfast, two walks and a quiet evening.");
+    setValue("dog-1-feeding-routine", "Two fictional measured meals each day.");
+    setValue("dog-1-exercise-requirements", "Two medium-length walks.");
+    setValue("dog-1-sleeping-arrangements", "Sleeps downstairs on a dog bed.");
+    setValue("dog-1-other-dogs", "Friendly after a calm introduction.");
+    setValue("dog-1-separation-anxiety", "No fictional separation concerns.");
+    setValue("dog-1-aggression-fear", "no");
+    setValue("dog-1-other-care", "Enjoys fictional puzzle feeders.");
+    setValue("dog-1-feeding-consent", "yes");
+    setValue("dog-1-on-lead-consent", "yes");
+    setValue("dog-1-off-lead-consent", "yes");
+    setValue("dog-1-other-household-walk-consent", "yes");
+    setValue("dog-1-socialising-consent", "yes");
+    setValue("dog-1-overnight-consent", "yes");
+    setValue("dog-1-crate-consent", "no");
+    setValue("dog-1-medication-consent", "yes");
+    setValue("dog-1-emergency-treatment-consent", "yes");
+
+    setValue("dog-2-name", "Fictional Pippin");
+    setValue("dog-2-breed", "Imaginary Terrier cross");
+    setValue("dog-2-age", "Approximately 7 fictional years");
+    setValue("dog-2-sex", "female");
+    setValue("dog-2-neutered", "yes");
+    setValue("dog-2-microchipped", "no");
+    setValue("dog-2-insured", "no");
+    setValue(
+      "dog-2-vet-details",
+      "Sample Animal Clinic, 2 Imaginary Street, 01000 222222",
+    );
+    setValue("dog-2-vaccination-date", "2026-08-11");
+    setValue("dog-2-worming-date", "2026-09-11");
+    setValue("dog-2-flea-date", "2026-09-11");
+    setValue("dog-2-medical-conditions", "yes");
+    setValue(
+      "dog-2-medical-details",
+      "Fictional mild joint stiffness for the conditional nulling test.",
+    );
+    setValue("dog-2-medication", "yes");
+    setValue(
+      "dog-2-medication-details",
+      "One fictional tablet with the evening meal.",
+    );
+    setValue("dog-2-allergies", "yes");
+    setValue("dog-2-allergy-details", "Fictional seasonal pollen sensitivity.");
+    setValue(
+      "dog-2-daily-routine",
+      "A short morning walk, rest periods and an evening stroll.",
+    );
+    setValue("dog-2-feeding-routine", "Two small fictional meals each day.");
+    setValue("dog-2-exercise-requirements", "Short walks at a gentle pace.");
+    setValue("dog-2-sleeping-arrangements", "Sleeps in her own supplied crate.");
+    setValue("dog-2-other-dogs", "Prefers calm dogs and gradual introductions.");
+    setValue("dog-2-separation-anxiety", "May whine briefly when first left.");
+    setValue("dog-2-aggression-fear", "yes");
+    setValue(
+      "dog-2-aggression-fear-details",
+      "Fictionally nervous around unfamiliar large dogs; use distance and treats.",
+    );
+    setValue("dog-2-other-care", "Entirely fictional care information.");
+    setValue("dog-2-feeding-consent", "no");
+    setValue("dog-2-on-lead-consent", "yes");
+    setValue("dog-2-off-lead-consent", "no");
+    setValue("dog-2-other-household-walk-consent", "yes");
+    setValue("dog-2-socialising-consent", "yes");
+    setValue("dog-2-overnight-consent", "yes");
+    setValue("dog-2-crate-consent", "yes");
+    setChecked("dog-2-crate-agreement");
+    setValue("dog-2-medication-consent", "yes");
+    setValue("dog-2-emergency-treatment-consent", "yes");
+
+    setChecked("accuracyConfirmation");
+    setChecked("enquiryAcknowledgement");
   }
 
   function prepareReview() {
@@ -260,7 +570,8 @@ export function BookingEnquiryForm() {
         : String(data.get("dayCareDates"));
 
     setValidationMessage("");
-    setSubmitted(false);
+    setSubmissionState("idle");
+    setSubmissionMessage("");
     setReview({
       name: String(data.get("fullName")),
       email: String(data.get("email")),
@@ -271,21 +582,91 @@ export function BookingEnquiryForm() {
     });
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (submissionState === "submitting") return;
+
     if (!review) {
       prepareReview();
       return;
     }
 
-    setSubmitted(true);
-    setReview(null);
-    setValidationMessage("");
+    const form = formRef.current;
+    if (!form || !form.checkValidity()) {
+      prepareReview();
+      return;
+    }
+
+    const formData = new FormData(form);
+    let submissionKey =
+      submissionAttemptRef.current?.submissionKey ?? crypto.randomUUID();
+
+    try {
+      let payload = serializeBookingEnquiry({ formData, dogs, submissionKey });
+      let payloadJson = JSON.stringify(payload);
+
+      if (
+        submissionAttemptRef.current &&
+        submissionAttemptRef.current.payloadJson !== payloadJson
+      ) {
+        submissionKey = crypto.randomUUID();
+        payload = serializeBookingEnquiry({ formData, dogs, submissionKey });
+        payloadJson = JSON.stringify(payload);
+      }
+
+      submissionAttemptRef.current = { submissionKey, payloadJson };
+      setSubmissionState("submitting");
+      setSubmissionMessage("");
+      setValidationMessage("");
+
+      const response = await fetch("/api/booking-enquiries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Booking-Anti-Bot": String(formData.get("antiBotField") ?? ""),
+        },
+        body: payloadJson,
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        submissionAttemptRef.current = null;
+        setSubmissionState("success");
+        setSubmissionMessage("");
+        setReview(null);
+        return;
+      }
+
+      if (response.status === 400) {
+        setSubmissionMessage(
+          "Some information could not be accepted. Please review the form and try again.",
+        );
+      } else if (response.status === 409) {
+        submissionAttemptRef.current = null;
+        setSubmissionMessage(
+          "We could not safely retry this enquiry. Please review it and try sending it again.",
+        );
+      } else {
+        setSubmissionMessage(
+          "We could not send your enquiry just now. Your information is still here, so please try again.",
+        );
+      }
+
+      setSubmissionState("error");
+    } catch {
+      setSubmissionState("error");
+      setSubmissionMessage(
+        "We could not send your enquiry just now. Your information is still here, so please try again.",
+      );
+    }
   }
 
   function handleFormChange() {
     if (review) setReview(null);
-    if (submitted) setSubmitted(false);
+    if (submissionState !== "submitting") {
+      setSubmissionState("idle");
+      setSubmissionMessage("");
+    }
     if (validationMessage) setValidationMessage("");
   }
 
@@ -294,27 +675,67 @@ export function BookingEnquiryForm() {
       ref={formRef}
       onSubmit={handleSubmit}
       onChange={handleFormChange}
+      aria-busy={submissionState === "submitting"}
       className="mx-auto max-w-5xl"
     >
+      <div hidden aria-hidden="true">
+        <label>
+          Anti-bot check: leave this field empty
+          <input
+            name="antiBotField"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+          />
+        </label>
+      </div>
+
+      {process.env.NODE_ENV === "development" && (
+        <div className="mb-6 flex flex-wrap items-center gap-3 border border-dashed border-amber-600 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <button
+            type="button"
+            onClick={fillTestData}
+            className="shrink-0 border border-amber-800 px-3 py-2 font-bold hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-800"
+          >
+            Fill test data
+          </button>
+          <button
+            type="button"
+            onClick={fillTwoDogBoardingTestData}
+            className="border border-amber-800 px-3 py-2 font-bold hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-800"
+          >
+            Fill two-dog boarding test
+          </button>
+          <span>Development testing only</span>
+        </div>
+      )}
+
       <div className="mb-10 flex flex-col gap-3 border-l-4 border-blue-800 bg-blue-50 px-5 py-4 text-sm leading-6 text-slate-700 sm:flex-row sm:justify-between">
         <p>
           Fields marked <span className="font-bold text-red-700">*</span> are required.
         </p>
-        <p>No information is sent or stored in this prototype.</p>
+        <p>Your information is only sent after you review and submit the enquiry.</p>
       </div>
 
-      {submitted && (
+      {submissionState === "success" && (
         <div
           ref={successRef}
           tabIndex={-1}
           role="status"
           className="mb-10 border border-green-700 bg-green-50 p-5 outline-none focus:ring-2 focus:ring-green-700"
         >
-          <h2 className="text-xl font-bold text-green-900">Prototype validation complete</h2>
+          <h2 className="text-xl font-bold text-green-900">Enquiry received</h2>
           <p className="mt-2 leading-7 text-green-900">
-            The form passed the client-side checks, but this prototype has not sent or
-            stored your enquiry. Backend submission will be added in a later iteration.
+            Thank you. Your booking enquiry has been received. This does not confirm a
+            booking; Kerry will contact you about availability and the next steps.
           </p>
+        </div>
+      )}
+
+      {submissionState === "error" && (
+        <div role="alert" className="mb-10 border border-red-700 bg-red-50 p-4 text-red-900">
+          <p className="font-bold">Your enquiry was not sent</p>
+          <p className="mt-1 text-sm">{submissionMessage}</p>
         </div>
       )}
 
@@ -582,9 +1003,10 @@ export function BookingEnquiryForm() {
           <button
             type="button"
             onClick={addDog}
+            disabled={dogs.length >= 5}
             className="justify-self-start border border-blue-800 px-5 py-3 font-bold text-blue-800 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
           >
-            + Add another dog
+            {dogs.length >= 5 ? "Maximum of five dogs" : "+ Add another dog"}
           </button>
         </div>
       </FormSection>
@@ -863,7 +1285,7 @@ export function BookingEnquiryForm() {
       <FormSection
         number="07"
         title="Review and submit"
-        description="Nothing will be sent while this page is a static prototype."
+        description="Review your information before sending your booking enquiry."
       >
         <div>
           <div className="grid gap-4">
@@ -894,7 +1316,7 @@ export function BookingEnquiryForm() {
             </label>
           </div>
 
-          {!review && (
+          {!review && submissionState !== "success" && (
             <button
               type="button"
               onClick={prepareReview}
@@ -943,14 +1365,20 @@ export function BookingEnquiryForm() {
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <button
                   type="submit"
-                  className="bg-blue-800 px-7 py-4 font-bold text-white hover:bg-blue-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
+                  disabled={submissionState === "submitting"}
+                  className="bg-blue-800 px-7 py-4 font-bold text-white hover:bg-blue-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Submit booking enquiry
+                  {submissionState === "submitting"
+                    ? "Sending enquiry..."
+                    : submissionState === "error"
+                      ? "Try sending again"
+                      : "Submit booking enquiry"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setReview(null)}
-                  className="border border-slate-400 px-7 py-4 font-bold text-slate-800 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-800"
+                  disabled={submissionState === "submitting"}
+                  className="border border-slate-400 px-7 py-4 font-bold text-slate-800 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Edit details
                 </button>
