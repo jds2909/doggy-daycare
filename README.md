@@ -48,9 +48,30 @@ npm run build
 npm start
 ```
 
-## SQL persistence tests
+## Testing and CI
 
-`supabase/tests/booking_persistence_tests.sql` covers one-dog and two-dog enquiries, rollback for an invalid second dog, identical retries, conflicting submission keys and denied RPC access for `anon` and `authenticated` roles. Run it with an administrative database connection after migrations `001` and `002` have been applied. Test data is rolled back.
+Run the automated test suites locally with:
+
+```bash
+npm test
+npm run test:booking
+npm run test:admin
+```
+
+`npm test` runs all booking-system and admin tests. The focused commands run
+only the Vitest booking suite or the Node.js admin authorisation suite.
+
+Database persistence is covered separately by the transactional SQL suite at
+`supabase/tests/booking_persistence_tests.sql`. Run the complete file manually
+in the Supabase SQL Editor after applying migrations `001` and `002`. It verifies
+one-dog and two-dog inserts, rollback on failure, idempotent retries, conflicting
+submission keys, and denied public RPC access. Its final `ROLLBACK` removes all
+fictional test records.
+
+GitHub Actions runs on every push to `main` and every pull request targeting
+`main`. It installs the locked dependencies with `npm ci`, then runs the full
+test suite, lint checks, and a production build. The workflow does not deploy or
+require production service credentials.
 
 ## Key files
 
