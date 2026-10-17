@@ -51,6 +51,12 @@ export function SiteFooter() {
           >
             Make a booking enquiry
           </Link>
+          <Link
+            href="/privacy"
+            className="mt-3 block text-sm text-blue-200 underline decoration-blue-500 underline-offset-4 hover:text-white"
+          >
+            Privacy notice
+          </Link>
         </div>
       </div>
       <div className="border-t border-white/10 px-5 py-5 text-center text-xs text-blue-300">
