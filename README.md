@@ -7,7 +7,8 @@ Website for an independent dog daycare and home boarding business in Launceston,
 ## Implementation
 
 - Next.js 16 App Router, React 19, TypeScript and Tailwind CSS 4.
-- Responsive homepage and booking enquiry form with multiple dogs, conditional fields, per-dog permissions, browser validation and a review-before-submit step.
+- Responsive public website with real client photography, service information, care policies and a gallery.
+- Booking enquiry form with multiple dogs, conditional fields, per-dog permissions, browser validation and a review-before-submit step.
 - `POST /api/booking-enquiries` validates submissions server-side with Zod.
 - Supabase-hosted PostgreSQL stores enquiries in `booking_enquiries`, `enquiry_dogs` and `dog_permissions`.
 - The PostgreSQL RPC `create_booking_enquiry(jsonb)` saves each enquiry atomically. Submission keys provide idempotency: identical retries return the existing enquiry; conflicting reuse is rejected.
@@ -18,7 +19,7 @@ Website for an independent dog daycare and home boarding business in Launceston,
 - Development-only autofill helpers support manual form testing.
 - A single-owner admin interface uses Supabase Auth for login/logout, protected enquiry lists/details and status changes. See [admin setup](docs/admin-setup.md) for account and environment configuration.
 
-Submissions are enquiries only and do not confirm a booking. Some navigation links point to information pages that are not yet implemented.
+Submissions are enquiries only and do not confirm a booking.
 
 ## Routes
 
@@ -26,6 +27,13 @@ Submissions are enquiries only and do not confirm a booking. Some navigation lin
 | --- | --- |
 | `/` | Homepage, services and contact information |
 | `/booking-enquiry` | Booking enquiry form |
+| `/vaccination-policy` | Vaccination requirements and records |
+| `/preparing-for-stay` | Pre-arrival guidance and packing information |
+| `/trial-familiarisation` | Trial familiarisation process |
+| `/enrichment-and-exercise` | Daily enrichment, exercise and rest information |
+| `/dogs-under-12-months` | Care information for puppies and young dogs |
+| `/gallery` | Client photography showing the home, garden, dogs and walks |
+| `/privacy` | Public privacy notice |
 | `POST /api/booking-enquiries` | Validate and persist an enquiry, then attempt email notification |
 | `/admin/login` | Owner login |
 | `/admin/enquiries` | Protected enquiry list |
@@ -33,7 +41,7 @@ Submissions are enquiries only and do not confirm a booking. Some navigation lin
 
 ## Running locally
 
-Use Node.js 20 or later and npm. Copy `.env.example` to `.env.local` and configure the listed server environment variables for Supabase, Resend, notification addresses and allowed origins. Keep credentials out of version control.
+Use Node.js 20.9 or later and npm. Copy `.env.example` to `.env.local` and configure the listed server environment variables for Supabase, Resend, notification addresses and allowed origins. Keep credentials out of version control.
 
 ```bash
 npm install
@@ -84,6 +92,9 @@ require production service credentials.
 | `lib/supabase-server.ts` | Server-only Supabase client |
 | `lib/booking-email.ts` | Resend notifications |
 | `supabase/migrations/` | Database schema and atomic persistence RPC |
+| [`docs/architecture.md`](docs/architecture.md) | System architecture, data flow and security boundaries |
+| [`docs/data-retention.md`](docs/data-retention.md) | Internal retention and deletion policy |
+| [`docs/dependency-security-review.md`](docs/dependency-security-review.md) | Dependency and application security review |
 
 ## Screenshots
 
